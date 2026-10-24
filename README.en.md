@@ -70,6 +70,7 @@ Screenshots show fictitious UI validation data. Local tests and packages do not 
 
 ## Documentation and versions
 
+- [Source code and folder structure](docs/en/architecture.md)
 - [User guide](docs/en/guide.md)
 - [iPhone/iPad guide](ios/README-en.md)
 - [Current changelog](CHANGELOG.en.md)

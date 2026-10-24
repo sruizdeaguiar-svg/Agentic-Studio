@@ -76,6 +76,7 @@ El test de interoperabilidad stdio se omite si no está instalado el servidor of
 
 ## Documentación y versiones
 
+- [Estructura de carpetas y código](docs/architecture.md)
 - [Guía de uso](docs/guide.md)
 - [Guía de iPhone/iPad](ios/README-es.md)
 - [Historial de versiones anteriores](https://github.com/sruizdeaguiar-svg/Agentic-Studio/tree/historial-versiones)
