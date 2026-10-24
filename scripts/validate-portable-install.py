@@ -61,7 +61,7 @@ try:
  pid=api('/api/projects',{'name':'Fictitious portable QA','instructions':''})['id'];api('/api/file',{'project':pid,'path':'probe.txt','content':'PORTABLE-42'});assert api('/api/file?project='+pid+'&path=probe.txt')['content']=='PORTABLE-42'
  report['checks']['project_file_roundtrip']=True
  api('/api/setup',{'roots':[],'complete':True});assert api('/api/setup')['complete'];report['checks']['setup_saved_without_models']=True
- api('/api/memory/reclaim',{})
+ # Do not invoke global stop: it explicitly controls the user's external LM Studio.
  process.terminate();process.wait(timeout=30);process=None
  for _ in range(80):
   ports=subprocess.run(['/usr/sbin/lsof','-Pan','-p',str(backend),'-iTCP','-sTCP:LISTEN'],capture_output=True,text=True)
