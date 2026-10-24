@@ -35,3 +35,7 @@ Use **Cerrar** to exit the app and its owned processes. Conversations persist. C
 ## Versions and security
 
 `main` contains the current release. Earlier versions are kept in [historial-versiones](https://github.com/sruizdeaguiar-svg/Agentic-Studio/tree/historial-versiones). Read [current changes](../../CHANGELOG.en.md) and [security guidance](../../SECURITY.en.md) before upgrading.
+
+## Optional memory admission override
+
+In Motor, enable **Cargar aunque supere la estimación de memoria** for the selected model. It is off by default and saved per model. It skips the panel's admission budget; for oMLX it also passes `--memory-guard off` without a conflicting ceiling. Context, explicit KV cache, concurrency and project permissions remain enforced. The OS or engine may still reject allocations; enabling the option does not guarantee a model will fit. No large-model load is performed simply by saving the option.

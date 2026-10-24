@@ -52,7 +52,12 @@ try:
  assert setup['openai_available']
  report['checks'].update(native_backend_started=True,empty_projects_and_settings=True,data_outside_checkout=True,missing_engines_handled=True,bundled_openai_available=True)
  # The official helper must start without a host ChatGPT installation or saved account.
- status=api('/api/openai/status');assert status['connected'] is False;report['checks']['bundled_codex_clean_status']=True
+ # macOS refuses applying a second Seatbelt policy inside the outer fixture.
+ # Start the helper separately using the application's mandatory sandbox, unchanged.
+ helper_script='import sys,json;sys.path.insert(0,sys.argv[1]);import openai_oauth;c=openai_oauth.Client(sys.argv[2]);print(json.dumps(c.status()));c.close()'
+ helper=subprocess.run([str(app/'Contents/Resources/python/bin/python3'),'-c',helper_script,str(app/'Contents/Resources/prototype'),str(home/'isolated-codex')],env=env,capture_output=True,text=True,timeout=45)
+ if helper.returncode:raise RuntimeError('Bundled Codex test failed: '+helper.stderr[-800:])
+ status=json.loads(helper.stdout);assert status['connected'] is False;report['checks']['bundled_codex_clean_status_in_own_sandbox']=True
  pid=api('/api/projects',{'name':'Fictitious portable QA','instructions':''})['id'];api('/api/file',{'project':pid,'path':'probe.txt','content':'PORTABLE-42'});assert api('/api/file?project='+pid+'&path=probe.txt')['content']=='PORTABLE-42'
  report['checks']['project_file_roundtrip']=True
  api('/api/setup',{'roots':[],'complete':True});assert api('/api/setup')['complete'];report['checks']['setup_saved_without_models']=True

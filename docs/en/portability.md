@@ -53,3 +53,9 @@ This tests independence from host paths and configuration. **It is not a freshly
 - vLLM discovery no longer exclusively pins a Python minor version; absent or inaccessible engines are handled gracefully.
 
 Release notes record concrete results. An isolated result does not verify every engine/model or replace an independent security audit.
+
+The native app is tested inside the host-denial sandbox. Codex is tested separately in the product's own mandatory sandbox, because macOS rejects applying a second Seatbelt policy. Xcode SwiftUI plugins likewise use their own sandbox, so iOS compilation uses an empty user environment without the external wrapper. No product sandbox or compiler protection is disabled.
+
+## Verified results
+
+The GitHub candidate was cloned into a new path with spaces. The complete installer was rebuilt with an empty dependency cache, empty user home and blocked host-user/volume/Homebrew access. Official Python and Codex archives were downloaded again and SHA-256 verified. Native install, Desktop link, backend startup, empty onboarding state, no-engine handling, bundled Codex in its own sandbox, fictitious file IO, owned-backend shutdown and database-preserving update passed. Thirteen Mach-O files were inspected; the highest declared minimum macOS was 12.0.0. The source also built unsigned iOS simulator and ARM64 device packages with empty user settings. No clean OS VM, older macOS runtime or Gatekeeper/quarantine success is claimed.

@@ -35,3 +35,7 @@ Usa Cerrar para terminar la app y sus procesos propios. Las conversaciones persi
 ## Versiones y seguridad
 
 `main` contiene la versión actual; las anteriores se conservan en [historial-versiones](https://github.com/sruizdeaguiar-svg/Agentic-Studio/tree/historial-versiones). Consulta [los cambios actuales](../CHANGELOG.md) y [seguridad](../SECURITY.md) antes de actualizar.
+
+## Omitir opcionalmente el control de memoria
+
+En Motor activa **Cargar aunque supere la estimación de memoria** para el modelo seleccionado. Está desactivado por defecto y se guarda por modelo. Omite el presupuesto de admisión del panel; en oMLX añade `--memory-guard off` sin un techo incompatible. Se mantienen contexto, KV explícita, concurrencia y permisos de proyecto. El sistema o el motor aún pueden rechazar una reserva: la opción no garantiza que el modelo quepa. Guardarla no carga por sí solo un modelo grande.

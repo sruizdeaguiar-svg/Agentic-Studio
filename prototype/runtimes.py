@@ -158,7 +158,7 @@ def estimate_kv(config,context):
         else:kv+=context*global_heads*global_dim*4
     return int(kv+recurrent+128*1024**2)
 
-def launch_spec(engine,model,context,kv,port,key,data,memory_gb,batch=256,prefill_priority='context',moe_offload=False,moe_fraction=.25):
+def launch_spec(engine,model,context,kv,port,key,data,memory_gb,batch=256,prefill_priority='context',moe_offload=False,moe_fraction=.25,ignore_memory_admission=False):
     if not 64<=batch<=8192 or prefill_priority not in ('context','speed'):
         raise ValueError('Prefill batch o prioridad fuera de rango.')
     if engine=='vllm' and kv!='f16':raise ValueError('vLLM Metal usa KV nativa en este perfil.')
@@ -173,7 +173,7 @@ def launch_spec(engine,model,context,kv,port,key,data,memory_gb,batch=256,prefil
     env=runtime_environment(engine)
     env.update(HF_HOME=str(data/'hf-cache'),VLLM_CACHE_ROOT=str(data/'vllm-cache'),VLLM_API_KEY=key,OMLX_API_KEY=key,OMLX_BASE_PATH=str(data/'omlx'))
     if engine=='vllm':
-        if size+estimate_kv(config,context)+int(1.5*1024**3)>memory_gb*1024**3:
+        if not ignore_memory_admission and size+estimate_kv(config,context)+int(1.5*1024**3)>memory_gb*1024**3:
             raise ValueError('Pesos, KV estimada y reserva vLLM superan el límite de memoria elegido.')
         # Preserve the installed runtime. A version-checked local compatibility
         # copy honors an explicit, context-sized KV budget on this Metal build.
@@ -189,7 +189,7 @@ def launch_spec(engine,model,context,kv,port,key,data,memory_gb,batch=256,prefil
     else:
         base=data/'omlx';base.mkdir(exist_ok=True)
         models=folder/'models';models.mkdir();(models/'studio-local').symlink_to(view,target_is_directory=True)
-        (base/'settings.json').write_text(json.dumps({'server':{'host':'127.0.0.1','port':port},'scheduler':{'max_concurrent_requests':1,'embedding_batch_size':1,'prefill_priority':prefill_priority,'chunked_prefill':True},'sampling':{'max_context_window':context,'max_context_window_policy':context,'max_tokens':2048},'cache':{'enabled':False,'hot_cache_max_size':'0'},'memory':{'prefill_memory_guard':True,'memory_guard_tier':'safe'}}))
+        (base/'settings.json').write_text(json.dumps({'server':{'host':'127.0.0.1','port':port},'scheduler':{'max_concurrent_requests':1,'embedding_batch_size':1,'prefill_priority':prefill_priority,'chunked_prefill':True},'sampling':{'max_context_window':context,'max_context_window_policy':context,'max_tokens':2048},'cache':{'enabled':False,'hot_cache_max_size':'0'},'memory':{'prefill_memory_guard':not ignore_memory_admission,'memory_guard_tier':'safe'}}))
         model_settings={'max_context_window':context,'max_tokens':2048,'model_alias':'studio-local','enable_thinking':False}
         # oMLX TurboQuant is not llama.cpp Q8/Q4; do not silently equate them.
         if kv.startswith('tq'):
@@ -197,5 +197,6 @@ def launch_spec(engine,model,context,kv,port,key,data,memory_gb,batch=256,prefil
         if moe_offload:
             model_settings.update(moe_expert_offload_enabled=True,moe_expert_offload_resident_fraction=moe_fraction)
         (base/'model_settings.json').write_text(json.dumps({'version':1,'models':{'studio-local':model_settings}}))
-        args=[str(OMLX_CLI),'serve','--base-path',str(base),'--model-dir',str(models),'--host','127.0.0.1','--port',str(port),'--max-concurrent-requests','1','--embedding-batch-size','1','--no-cache','--no-hf-cache','--hot-cache-max-size','0','--initial-cache-blocks','4','--memory-guard-gb',str(memory_gb),'--log-level','warning']
-    return args,env,{'engine':engine,'model':str(model),'context':context,'kv':'native' if kv=='f16' else kv,'bytes':size,'ready':False,'runtime_view':str(folder),'memory_ceiling_gb':memory_gb}
+        args=[str(OMLX_CLI),'serve','--base-path',str(base),'--model-dir',str(models),'--host','127.0.0.1','--port',str(port),'--max-concurrent-requests','1','--embedding-batch-size','1','--no-cache','--no-hf-cache','--hot-cache-max-size','0','--initial-cache-blocks','4','--log-level','warning']
+        args+=['--memory-guard','off'] if ignore_memory_admission else ['--memory-guard-gb',str(memory_gb)]
+    return args,env,{'engine':engine,'model':str(model),'context':context,'kv':'native' if kv=='f16' else kv,'bytes':size,'ready':False,'runtime_view':str(folder),'memory_ceiling_gb':None if ignore_memory_admission else memory_gb,'ignore_memory_admission':ignore_memory_admission}

@@ -53,3 +53,9 @@ Esto prueba independencia de rutas y configuración en el sistema anfitrión. **
 - Descubrimiento de vLLM sin fijar exclusivamente una versión menor de Python y tratamiento de motores ausentes o inaccesibles.
 
 Los resultados concretos se publican en las notas de la versión. Un resultado aislado no demuestra funcionamiento con todos los motores o modelos ni sustituye una auditoría externa.
+
+La app nativa se prueba dentro del sandbox que bloquea el anfitrión. Codex se prueba por separado con el sandbox obligatorio del propio producto: macOS rechaza aplicar una segunda política Seatbelt. Los plugins SwiftUI de Xcode también usan su propio sandbox, por lo que la compilación iOS utiliza el usuario vacío sin esa envoltura externa. No se desactiva el aislamiento del producto ni la protección del compilador.
+
+## Resultados comprobados
+
+La rama candidata de GitHub se clonó en una ruta nueva con espacios. Se reconstruyó el instalador completo con caché de dependencias vacía, usuario vacío y acceso bloqueado al usuario real, volúmenes y Homebrew. Python y Codex oficiales se descargaron de nuevo y se verificaron por SHA-256. Pasaron instalación nativa, acceso del Escritorio, arranque del backend, configuración inicial vacía, ausencia de motores, Codex incluido con su propio sandbox, archivos ficticios, cierre del backend propio y actualización que conserva la base de datos. Se inspeccionaron 13 archivos Mach-O: el mínimo macOS más alto declarado fue 12.0.0. También se compilaron simulador iOS y dispositivo ARM64 sin firma con ajustes de usuario vacíos. No se afirma una prueba en VM limpia, ejecución en macOS antiguo ni aprobación de Gatekeeper/cuarentena.

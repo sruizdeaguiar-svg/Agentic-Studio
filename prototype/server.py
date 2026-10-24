@@ -474,8 +474,14 @@ def stop_all_engines(include_lmstudio=True):
         result=stop_lmstudio() if include_lmstudio else {'controlled':False}
         return {'lmstudio':result,'engine':engine_status()}
 
+def memory_override(body):
+    value=body.get('ignore_memory_admission',False)
+    if not isinstance(value,bool):raise ValueError('La opción de omitir memoria debe ser booleana.')
+    return value
+
 def start_engine(body):
     global ENGINE, ENGINE_LOG, ENGINE_META, ENGINE_KEY
+    ignore_memory_admission=memory_override(body)
     kind = body.get('engine', 'llama')
     if kind in ('vllm','omlx'):
         return start_secondary(body)
@@ -539,7 +545,7 @@ def start_engine(body):
         if budget['moe']:
             measured=resources();available=measured.get('available_mb',0)*1024**2
             required=budget['required_bytes']+(budget['weights_bytes'] if body.get('repack',False) else 0)
-            if (available<required or measured.get('memory_pressure') in ('warning','critical')) and not body.get('confirm_memory_risk'):
+            if (available<required or measured.get('memory_pressure') in ('warning','critical')) and not body.get('confirm_memory_risk') and not ignore_memory_admission:
                 raise ValueError('MoE: presupuesto conservador '+format(required/1024**3,'.2f')+' GiB; disponible estimada '+format(available/1024**3,'.2f')+' GiB. Libera memoria o revisa y confirma expresamente el riesgo de swap.')
         ENGINE_LOG=(DATA/'engine.log').open('a')
         ENGINE_KEY = secrets.token_urlsafe(32)
@@ -550,10 +556,10 @@ def start_engine(body):
             if '--no-op-offload' in help_text:args+=['--no-op-offload']
             if '--no-kv-offload' in help_text:args+=['--no-kv-offload']
         ENGINE = subprocess.Popen(args, stdout=ENGINE_LOG, stderr=subprocess.STDOUT, start_new_session=True, env=env)
-        ENGINE_META = {'engine':'llama', 'model': str(model), 'context': ctx, 'kv': kv, 'bytes': model.stat().st_size, 'ready':False,'architecture':budget['architecture'],'experts':budget['experts'],'active_experts':budget['active_experts'],'tool_protocol':'json' if budget['architecture']=='deepseek2' else 'native'}
+        ENGINE_META = {'engine':'llama', 'model': str(model), 'context': ctx, 'kv': kv, 'bytes': model.stat().st_size, 'ready':False,'architecture':budget['architecture'],'experts':budget['experts'],'active_experts':budget['active_experts'],'tool_protocol':'json' if budget['architecture']=='deepseek2' else 'native','ignore_memory_admission':ignore_memory_admission}
     set_setting('context:' + str(model), ctx)
     set_setting('selected_provider', 'own')
-    profile={'engine':'llama','binary':str(binary),'model':str(model),'context':ctx,'kv':kv,'cpu':bool(body.get('cpu')),'threads':threads,'batch':batch,'ubatch':ubatch,'gpu_layers':gpu_layers,'repack':bool(body.get('repack',False)),'mmap':bool(body.get('mmap',True)),'moe_cpu_layers':moe_layers,'moe_cache_mib':moe_cache}
+    profile={'engine':'llama','ignore_memory_admission':ignore_memory_admission,'binary':str(binary),'model':str(model),'context':ctx,'kv':kv,'cpu':bool(body.get('cpu')),'threads':threads,'batch':batch,'ubatch':ubatch,'gpu_layers':gpu_layers,'repack':bool(body.get('repack',False)),'mmap':bool(body.get('mmap',True)),'moe_cpu_layers':moe_layers,'moe_cache_mib':moe_cache}
     set_setting('engine_config',profile)
     set_setting('engine_profile:llama:'+str(model),profile)
     audit('engine.start', {'model': str(model), 'context': ctx, 'pid': ENGINE.pid})
@@ -561,6 +567,7 @@ def start_engine(body):
 
 def start_secondary(body):
     global ENGINE, ENGINE_LOG, ENGINE_META, ENGINE_KEY
+    ignore_memory_admission=memory_override(body)
     kind=body['engine'];model=str(Path(body['model']).expanduser().resolve());ctx=int(body.get('context',4096))
     if not 512<=ctx<=131072 or not body.get('confirm_load'):
         raise ValueError('Contexto entre 512 y 131072 y confirmación de carga obligatoria.')
@@ -574,7 +581,7 @@ def start_secondary(body):
     if isinstance(native,int) and ctx>native:raise ValueError('El contexto supera el máximo nativo de '+str(native)+'.')
     memory_gb=float(body.get('memory_gb',8))
     if not math.isfinite(memory_gb) or not 1<=memory_gb<=128:raise ValueError('Límite de memoria de 1 a 128 GB.')
-    if item['bytes']/1024**3>memory_gb:raise ValueError('Los pesos en disco ya superan el límite de memoria seleccionado.')
+    if item['bytes']/1024**3>memory_gb and not ignore_memory_admission:raise ValueError('Los pesos en disco ya superan el límite de memoria seleccionado.')
     with ENGINE_LOCK:
         stop_engine()
         if BROWSER.available():stop_lmstudio()
@@ -583,13 +590,13 @@ def start_secondary(body):
         with socket.socket() as sock:
             sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);sock.bind(('127.0.0.1',port))
         ENGINE_KEY=secrets.token_urlsafe(32)
-        args,env,meta=runtimes.launch_spec(kind,model,ctx,body.get('kv','f16'),port,ENGINE_KEY,DATA,memory_gb,int(body.get('batch',256)),body.get('prefill_priority','context'),bool(body.get('moe_offload')),float(body.get('moe_fraction',.25)))
+        args,env,meta=runtimes.launch_spec(kind,model,ctx,body.get('kv','f16'),port,ENGINE_KEY,DATA,memory_gb,int(body.get('batch',256)),body.get('prefill_priority','context'),bool(body.get('moe_offload')),float(body.get('moe_fraction',.25)),ignore_memory_admission=ignore_memory_admission)
         ENGINE_LOG=(DATA/'engine.log').open('a')
         ENGINE=subprocess.Popen(args,env=env,stdout=ENGINE_LOG,stderr=subprocess.STDOUT,start_new_session=True)
         ENGINE_META=meta
     set_setting('context:'+model,ctx)
     set_setting('selected_provider','own')
-    profile={'engine':kind,'model':model,'context':ctx,'kv':body.get('kv','f16'),'memory_gb':memory_gb,'batch':int(body.get('batch',256)),'prefill_priority':body.get('prefill_priority','context'),'moe_offload':bool(body.get('moe_offload')),'moe_fraction':float(body.get('moe_fraction',.25))}
+    profile={'engine':kind,'ignore_memory_admission':ignore_memory_admission,'model':model,'context':ctx,'kv':body.get('kv','f16'),'memory_gb':memory_gb,'batch':int(body.get('batch',256)),'prefill_priority':body.get('prefill_priority','context'),'moe_offload':bool(body.get('moe_offload')),'moe_fraction':float(body.get('moe_fraction',.25))}
     set_setting('engine_config',profile)
     set_setting('engine_profile:'+kind+':'+model,profile)
     audit('engine.start',{'engine':kind,'model':model,'context':ctx,'pid':ENGINE.pid})
@@ -1640,9 +1647,10 @@ class Handler(BaseHTTPRequestHandler):
             elif path == '/api/engine/profile':
                 kind=body.get('engine');model=str(Path(body['model']).expanduser().resolve())
                 if kind not in ('llama','vllm','omlx') or not Path(model).exists():raise ValueError('Motor o modelo no válido.')
-                allowed={'engine','model','binary','context','kv','cpu','threads','batch','ubatch','gpu_layers','mmap','memory_gb','prefill_priority','repack','moe_cpu_layers','moe_cache_mib','moe_offload','moe_fraction'}
+                allowed={'engine','model','binary','context','kv','cpu','threads','batch','ubatch','gpu_layers','mmap','memory_gb','prefill_priority','repack','moe_cpu_layers','moe_cache_mib','moe_offload','moe_fraction','ignore_memory_admission'}
                 profile={key:value for key,value in body.items() if key in allowed}
                 profile['model']=model
+                memory_override(profile)
                 limits={'context':(512,131072),'threads':(1,64),'batch':(32,8192),'ubatch':(16,8192),'gpu_layers':(-1,999),'memory_gb':(1,128),'moe_cpu_layers':(0,512),'moe_cache_mib':(0,8192),'moe_fraction':(.01,1)}
                 for key,(low,high) in limits.items():
                     if key in profile:

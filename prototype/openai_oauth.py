@@ -12,7 +12,7 @@ FEATURES=('shell_tool','unified_exec','code_mode','code_mode_host','js_repl','mu
 
 def sandbox(home,binary=BINARY):
     literal=lambda s:json.dumps(str(s))
-    reads=['/System','/usr','/bin','/sbin','/Library/Apple','/Library/Preferences','/private/etc','/private/preboot','/dev','/Applications/ChatGPT.app',str(binary.parent.parent),str(home)]
+    reads=['/System','/usr','/bin','/sbin','/Library/Apple','/Library/Preferences','/private/etc','/private/preboot','/dev',str(binary.parent.parent),str(home)]
     p='(version 1)(deny default)(allow process-fork sysctl-read mach-lookup network* ipc-posix-shm ipc-posix-sem)(allow process-info* (target self))(allow signal (target self))'
     p+='(allow process-exec (literal '+literal(binary)+'))'
     p+='(allow file-map-executable '+ ' '.join('(subpath '+literal(v)+')' for v in reads)+')'
