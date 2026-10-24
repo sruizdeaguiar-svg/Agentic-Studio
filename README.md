@@ -20,7 +20,7 @@ El Mac ejecuta los modelos y las herramientas. El iPad y el iPhone comparten la 
 
 ## Instalar en macOS
 
-Apple Silicon, macOS 12 o posterior. Descarga el instalador de la sección Releases, descomprime y abre **Instalar Agentic Studio**. Elige la carpeta de instalación y, si quieres, crea el acceso del Escritorio. El asistente detecta carpetas de modelos y permite iniciar OAuth con OpenAI.
+Apple Silicon. Destino mínimo de compilación macOS 12; ejecución comprobada en macOS 26.6.2 y 27.0.1. Descarga el instalador de la sección Releases, descomprime y abre **Instalar Agentic Studio**. Elige la carpeta de instalación y, si quieres, crea el acceso del Escritorio. El asistente detecta carpetas de modelos y permite iniciar OAuth con OpenAI.
 
 El paquete incluye Python portátil y el auxiliar oficial Codex; no requiere Xcode para usarlo. Los motores de inferencia y los modelos se instalan por separado. Configura sus rutas en Motor.
 
@@ -76,6 +76,7 @@ El test de interoperabilidad stdio se omite si no está instalado el servidor of
 
 ## Documentación y versiones
 
+- [Prueba en macOS virtualizado sin Xcode, Homebrew ni ChatGPT](docs/clean-macos-vm.md)
 - [Compilación y portabilidad](docs/portability.md)
 - [Estructura de carpetas y código](docs/architecture.md)
 - [Guía de uso](docs/guide.md)
@@ -84,4 +85,4 @@ El test de interoperabilidad stdio se omite si no está instalado el servidor of
 
 `main` contiene la versión actual. Las versiones anteriores y sus notas se guardan por separado en `historial-versiones`.
 
-macOS 0.5.1 corrige la portabilidad del instalador. El cliente iOS continúa en 0.5.0; no cambia su protocolo. La prueba aislada no equivale a un Mac limpio o una VM, y Gatekeeper no se ha eludido.
+macOS 0.5.2 corrige el bloqueo del instalador ante otro producto en el destino y pasa 13 controles en una VM macOS 26.6.2 sin dependencias del desarrollador. El cliente iOS sigue en 0.5.0. La aceptación normal por Gatekeeper sigue pendiente de Developer ID y notarización.

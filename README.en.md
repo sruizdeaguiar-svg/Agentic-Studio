@@ -19,7 +19,7 @@ The Mac runs models and tools. iPhone and iPad share the conversation over HTTPS
 
 ## Install on macOS
 
-Apple Silicon, macOS 12 or later. Download the installer from Releases, extract it and open **Instalar Agentic Studio**. Choose an installation folder and optionally create a Desktop shortcut. The setup assistant detects model folders and offers OpenAI OAuth sign-in.
+Apple Silicon. The build targets macOS 12; runtime was verified on macOS 26.6.2 and 27.0.1. Download the installer from Releases, extract it and open **Instalar Agentic Studio**. Choose an installation folder and optionally create a Desktop shortcut. The setup assistant detects model folders and offers OpenAI OAuth sign-in.
 
 The package includes portable Python and the official Codex helper; using it does not require Xcode. Inference engines and models are installed separately. Configure their paths in the Engine panel. The current application interface is in Spanish; this documentation provides English usage instructions.
 
@@ -70,6 +70,7 @@ Screenshots show fictitious UI validation data. Local tests and packages do not 
 
 ## Documentation and versions
 
+- [Clean macOS VM test without Xcode, Homebrew or ChatGPT](docs/en/clean-macos-vm.md)
 - [Build and portability verification](docs/en/portability.md)
 - [Source code and folder structure](docs/en/architecture.md)
 - [User guide](docs/en/guide.md)
@@ -80,4 +81,4 @@ Screenshots show fictitious UI validation data. Local tests and packages do not 
 
 `main` contains the current release. Previous snapshots and notes are kept separately in `historial-versiones`.
 
-macOS 0.5.1 fixes installer portability. The iOS client remains at 0.5.0 with the same protocol. Isolated testing is not a clean Mac/VM, and Gatekeeper has not been bypassed.
+macOS 0.5.2 fixes the installer hang when another product occupies the destination and passes 13 checks in a macOS 26.6.2 VM without developer dependencies. The iOS client remains at 0.5.0. Normal Gatekeeper acceptance still requires Developer ID signing and notarization.

@@ -29,7 +29,7 @@ final class Installer: NSObject,NSApplicationDelegate {
         window.contentView=stack;window.center();window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)
     }
     @objc func choose(){let panel=NSOpenPanel();panel.canChooseDirectories=true;panel.canChooseFiles=false;panel.canCreateDirectories=true;panel.allowsMultipleSelection=false;panel.directoryURL=destination;panel.message="Selecciona la carpeta que contendrá Agentic Studio.app. Los datos se guardan por separado.";if panel.runModal() == .OK,let url=panel.url{destination=url;location.stringValue=url.path}}
-    func run(_ binary:String,_ args:[String]) throws {let p=Process();p.executableURL=URL(fileURLWithPath:binary);p.arguments=args;p.standardOutput=FileHandle.nullDevice;p.standardError=FileHandle.nullDevice;try p.run();p.waitUntilExit();if p.terminationStatus != 0{throw NSError(domain:"AgenticInstaller",code:Int(p.terminationStatus),userInfo:[NSLocalizedDescriptionKey:"No se pudo verificar o firmar la aplicación. La instalación anterior se conserva."])}}
+    func run(_ binary:String,_ args:[String]) throws {let p=Process();p.executableURL=URL(fileURLWithPath:binary);p.arguments=args;p.standardOutput=FileHandle.nullDevice;p.standardError=FileHandle.nullDevice;try p.run();p.waitUntilExit();if p.terminationStatus != 0{throw NSError(domain:"AgenticInstaller",code:Int(p.terminationStatus),userInfo:[NSLocalizedDescriptionKey:"No se pudo verificar o firmar la aplicación (código \(p.terminationStatus)). Descarga de nuevo el paquete completo y comprueba su SHA-256. La instalación anterior se conserva."])}}
     @objc func install(){
         let fm=FileManager.default,target=destination.appendingPathComponent("Agentic Studio.app",isDirectory:true)
         // The legacy identifier is retained only for migration of an existing installation.
@@ -42,7 +42,7 @@ final class Installer: NSObject,NSApplicationDelegate {
         let active=candidates.filter{app in guard let url=app.bundleURL else{return true};return url.standardizedFileURL==target.standardizedFileURL || url.standardizedFileURL==installed?.standardizedFileURL}
         if !active.isEmpty{if commandLineInstall{print("Cierra Agentic Studio antes de instalar.");exit(2)};status.stringValue="Cierra Agentic Studio antes de instalar. El instalador no interrumpe generaciones ni cierra otros programas.";return}
         if let installed=installed {
-            guard let existing=Bundle(url:installed),identities.contains(existing.bundleIdentifier ?? "") else {status.stringValue="La carpeta de destino contiene otra aplicación con ese nombre. Elige otra ubicación.";return}
+            guard let existing=Bundle(url:installed),identities.contains(existing.bundleIdentifier ?? "") else {let message="La carpeta de destino contiene otra aplicación con ese nombre. Elige otra ubicación.";if commandLineInstall{print(message);exit(2)};status.stringValue=message;return}
             if commandLineInstall && !ProcessInfo.processInfo.arguments.contains("--update"){print("Ya existe una instalación; usa --update para conservarla como copia anterior.");exit(2)}
             if !commandLineInstall { let ask=NSAlert();ask.messageText="Actualizar Agentic Studio";ask.informativeText="Se conservarán los datos y una copia de la aplicación anterior. El instalador no borra carpetas de trabajo ni modelos.";ask.addButton(withTitle:"Actualizar");ask.addButton(withTitle:"Cancelar");if ask.runModal() != .alertFirstButtonReturn{return} }
         }

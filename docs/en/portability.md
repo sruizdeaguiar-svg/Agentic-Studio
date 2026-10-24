@@ -58,6 +58,10 @@ The native app is tested inside the host-denial sandbox. Codex is tested separat
 
 ## Verified results
 
-The GitHub candidate was cloned into a new path with spaces. The complete installer was rebuilt with an empty dependency cache, empty user home and blocked host-user/volume/Homebrew access. Official Python and Codex archives were downloaded again and SHA-256 verified. Native install, Desktop link, backend startup, empty onboarding state, no-engine handling, bundled Codex in its own sandbox, fictitious file IO, owned-backend shutdown and database-preserving update passed. Thirteen Mach-O files were inspected; the highest declared minimum macOS was 12.0.0. The source also built unsigned iOS simulator and ARM64 device packages with empty user settings. No clean OS VM, older macOS runtime or Gatekeeper/quarantine success is claimed.
+The GitHub candidate was cloned into a new path with spaces. The complete installer was rebuilt with an empty dependency cache, empty user home and blocked host-user/volume/Homebrew access. Official Python and Codex archives were downloaded again and SHA-256 verified. Native install, Desktop link, backend startup, empty onboarding state, no-engine handling, bundled Codex in its own sandbox, fictitious file IO, owned-backend shutdown and database-preserving update passed. Thirteen Mach-O files were inspected; the highest declared minimum macOS was 12.0.0. The source also built unsigned iOS simulator and ARM64 device packages with empty user settings. The subsequent clean VM test is documented separately; older macOS execution and Gatekeeper/quarantine acceptance are not established.
 
 The full local regression suite passed 78 tests, including the configured official stdio MCP fixture. The fresh GitHub source suite reported 71 cases with one optional stdio-fixture skip, using bundled Codex and no host MCP installation. The installation fixture never invokes the global LM Studio stop control; shutdown checks target only its own native app and backend.
+
+## Subsequent real VM test · 0.5.2
+
+Thirteen checks passed on macOS 26.6.2 without Xcode, Command Line Tools, Homebrew or ChatGPT. See [environment, results and limits](clean-macos-vm.md). Package operation passed; Developer ID signing and notarization remain pending.

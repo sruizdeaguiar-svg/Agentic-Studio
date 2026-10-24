@@ -2,6 +2,15 @@
 
 Español · [English](CHANGELOG.en.md)
 
+## 0.5.2 — Verificación en VM macOS limpia
+
+- 13 comprobaciones aprobadas en macOS 26.6.2 sin Xcode, Command Line Tools, Homebrew ni ChatGPT.
+- Corrige la instalación por CLI que quedaba abierta ante otra app en el destino; ahora sale con código 2 sin sustituirla.
+- Mejora el diagnóstico de firma y añade guía bilingüe al ZIP.
+- Añade script reproducible y [resultados de la VM](docs/clean-macos-vm.md).
+- Gatekeeper sigue pendiente: firma ad hoc y ausencia de ticket de notarización confirmadas por macOS. No se afirma aceptación de una descarga normal.
+- Cliente iOS 0.5.0 sin cambios.
+
 ## 0.5.1 — Portabilidad del instalador macOS
 
 - Preserva permisos de ejecución de la app, Python y Codex durante el empaquetado.

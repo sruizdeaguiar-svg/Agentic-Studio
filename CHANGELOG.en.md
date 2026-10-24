@@ -2,6 +2,15 @@
 
 [Español](CHANGELOG.md) · English
 
+## 0.5.2 — Clean macOS VM verification
+
+- Thirteen checks passed on macOS 26.6.2 without Xcode, Command Line Tools, Homebrew or ChatGPT.
+- Fixes CLI installation hanging when another app occupies the destination; it now exits with code 2 without replacing it.
+- Improves signature diagnostics and bundles a bilingual installation guide in the ZIP.
+- Adds a reproducible script and [VM results](docs/en/clean-macos-vm.md).
+- Gatekeeper remains unresolved: macOS confirmed ad-hoc signing and a missing notarization ticket. Normal downloaded-app acceptance is not claimed.
+- iOS client stays at 0.5.0 without changes.
+
 ## 0.5.1 — macOS installer portability
 
 - Preserves execute permissions for the app, Python and Codex while packaging.
