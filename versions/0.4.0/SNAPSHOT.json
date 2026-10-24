@@ -1,0 +1,9 @@
+{
+  "version": "0.4.0",
+  "available_source": "Python backend and web UI extracted from a retained local app build",
+  "native_source_available": false,
+  "binaries_included": false,
+  "personal_paths_sanitized": true,
+  "branding_normalized": true,
+  "security_status": "Historical: does not include current security fixes; not recommended for deployment"
+}
