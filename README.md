@@ -18,7 +18,7 @@ This branch keeps previous versions outside `main`. Snapshot 0.5.0 includes comp
 | [0.4.0](versions/0.4.0) | 15 | Archived / Archivada |
 | [0.4.1](versions/0.4.1) | 15 | Archived / Archivada |
 | [0.4.2](versions/0.4.2) | 15 | Archived / Archivada |
+| [0.5.0](versions/0.5.0) | 67 public source files / archivos públicos | Complete source; installer portability defects fixed in 0.5.1 / Fuentes completas; fallos del instalador corregidos en 0.5.1 |
 
 The previous iOS 0.4.3 client is recorded as installed and physically tested during development, but no complete source snapshot is available. Its personal signed package is intentionally not published. / El cliente iOS 0.4.3 anterior consta como instalado y probado físicamente; no se dispone de una instantánea completa de su código fuente. Su paquete con firma personal no se publica.
 
-| [0.5.0](versions/0.5.0) | 67 public source files / archivos públicos | Complete source; installer portability defects fixed in 0.5.1 / Fuentes completas; fallos del instalador corregidos en 0.5.1 |
