@@ -3,7 +3,7 @@ set -eu
 cd "${0:A:h}"
 mkdir -p analysis
 IOS_TASK_BUILD=$(mktemp -d /private/tmp/agentic-ios-release.XXXXXX)
-export CLANG_MODULE_CACHE_PATH=/private/tmp/agentic-studio-clang-cache
+export CLANG_MODULE_CACHE_PATH="$IOS_TASK_BUILD/clang-cache"
 mkdir -p ios/dist
 xcodebuild -project ios/AgenticMobile.xcodeproj -scheme AgenticMobile -sdk iphonesimulator -configuration Release -derivedDataPath "$IOS_TASK_BUILD" CODE_SIGNING_ALLOWED=NO build > analysis/ios-simulator-build.txt 2>&1
 IOS_TASK_BUILD="$IOS_TASK_BUILD" /usr/bin/python3 - <<'PY'
@@ -14,7 +14,7 @@ if target.exists():
  def cleanup_error(fn,path,error):
   if not isinstance(error[1],FileNotFoundError):raise error[1]
  shutil.rmtree(target,onerror=cleanup_error)
-target.parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source,target,copy_function=shutil.copyfile)
+target.parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source,target,copy_function=shutil.copy2)
 (target/'Agentic Studio').chmod(0o755)
 PY
 xcodebuild -project ios/AgenticMobile.xcodeproj -scheme AgenticMobile -sdk iphoneos -configuration Release -derivedDataPath "$IOS_TASK_BUILD" CODE_SIGNING_ALLOWED=NO build > analysis/ios-device-build.txt 2>&1

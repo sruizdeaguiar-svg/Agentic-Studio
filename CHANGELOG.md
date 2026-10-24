@@ -2,16 +2,13 @@
 
 Español · [English](CHANGELOG.en.md)
 
+## 0.5.1 — Portabilidad del instalador macOS
 
-## 0.5.0 — Agentic Studio
+- Preserva permisos de ejecución de la app, Python y Codex durante el empaquetado.
+- Compila app e instalador con destino mínimo macOS 12 explícito, en lugar de heredar macOS 27 del equipo de compilación.
+- La app usa Application Support del usuario y no depende del checkout.
+- Prefiere el cliente Codex incluido y admite motores opcionales ausentes o en otras ubicaciones.
+- Añade prueba nativa reproducible con usuario vacío y bloqueo de datos reales, motores, ChatGPT, Xcode y Python del anfitrión.
+- 73 pruebas de regresión aprobadas. Consulta [portabilidad](docs/portability.md) para límites y reproducción. Las correcciones de seguridad anteriores se mantienen.
 
-- Nuevo nombre e icono en macOS, iPhone e iPad, con migración de datos y credenciales existentes.
-- Proyectos editables con carpetas y permisos propios; eliminación recuperable.
-- Interfaz móvil compartida con escritorio y selector de proyectos autorizados.
-- Cambio secuencial de motores, descarga del modelo previo y parada global de recursos; cierre completo de LM Studio mediante control explícito.
-- Memoria disponible estimada con desglose y presupuesto conservador para MoE.
-- Corrección de la carga CPU/mmap de DeepSeek MoE sin repack y protocolo de herramientas JSON validado.
-- Instalador con carpeta de destino, detección de modelos y asistente OAuth.
-- Correcciones de seguridad AS-2026-01 a AS-2026-05: rutas y enlaces, negociación TLS, límites de conexiones, bootstrap local, permisos de base de datos y validación móvil. Detalle y pruebas en [las notas de seguridad](docs/releases/0.5.0-security.md).
-
-Las funciones verificadas, las limitaciones y los requisitos de firma se describen en README y SECURITY. El número de versión no implica notarización ni distribución en App Store.
+El cliente iOS permanece en 0.5.0. Las versiones anteriores están en la rama `historial-versiones` y sus etiquetas. El paquete no está notarizado; no se afirma una prueba real en un sistema recién instalado ni en macOS 12.

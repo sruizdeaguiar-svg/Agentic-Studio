@@ -6,10 +6,10 @@ STUDIO_ROOT="$PWD"
 STUDIO_BUILD=$(mktemp -d /private/tmp/agentic-studio-build.XXXXXX)
 APP="$STUDIO_BUILD/Agentic Studio.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/prototype"
-export CLANG_MODULE_CACHE_PATH=/private/tmp/agentic-studio-clang-cache
-export SWIFT_MODULECACHE_PATH=/private/tmp/agentic-studio-swift-cache
+export CLANG_MODULE_CACHE_PATH="$STUDIO_BUILD/clang-cache"
+export SWIFT_MODULECACHE_PATH="$STUDIO_BUILD/swift-cache"
 COPYFILE_DISABLE=1 /bin/cp native/Studio.swift "$STUDIO_BUILD/main.swift"
-xcrun swiftc -swift-version 5 -O -framework AppKit -framework WebKit -framework Security "$STUDIO_BUILD/main.swift" native/AgentBrowser.swift -o "$APP/Contents/MacOS/Agentic Studio"
+xcrun swiftc -target arm64-apple-macos12.0 -swift-version 5 -O -framework AppKit -framework WebKit -framework Security "$STUDIO_BUILD/main.swift" native/AgentBrowser.swift -o "$APP/Contents/MacOS/Agentic Studio"
 xcrun swift native/MakeIcon.swift "$STUDIO_BUILD/Studio.iconset"
 /usr/bin/iconutil -c icns "$STUDIO_BUILD/Studio.iconset" -o "$APP/Contents/Resources/Studio.icns"
 COPYFILE_DISABLE=1 /bin/cp prototype/server.py "$APP/Contents/Resources/prototype/server.py"
@@ -21,7 +21,7 @@ import plistlib
 import os
 from pathlib import Path
 root = Path.cwd()
-info = dict(CFBundleName=os.environ.get('STUDIO_DISPLAY_NAME','Agentic Studio'), CFBundleDisplayName=os.environ.get('STUDIO_DISPLAY_NAME','Agentic Studio'), CFBundleExecutable='Agentic Studio', CFBundleIdentifier=os.environ.get('STUDIO_BUNDLE_ID','local.agenticstudio.workspace'), CFBundleVersion='8', CFBundleShortVersionString='0.5.0', CFBundlePackageType='APPL', NSHighResolutionCapable=True, NSRemovableVolumesUsageDescription='Agentic guarda tus proyectos y modelos en el volumen que elijas. El agente conserva sus permisos por proyecto.', NSLocalNetworkUsageDescription='Conectar tu iPhone o iPad al servidor del Mac en tu red local.', LSMinimumSystemVersion='12.0', StudioWorkspace=os.environ.get('STUDIO_QA_WORKSPACE',str(root)), StudioShowSetup=os.environ.get('STUDIO_SHOW_SETUP')=='1', NSAppTransportSecurity={'NSAllowsLocalNetworking': True})
+info = dict(CFBundleName=os.environ.get('STUDIO_DISPLAY_NAME','Agentic Studio'), CFBundleDisplayName=os.environ.get('STUDIO_DISPLAY_NAME','Agentic Studio'), CFBundleExecutable='Agentic Studio', CFBundleIdentifier=os.environ.get('STUDIO_BUNDLE_ID','local.agenticstudio.workspace'), CFBundleVersion='9', CFBundleShortVersionString='0.5.1', CFBundlePackageType='APPL', NSHighResolutionCapable=True, NSRemovableVolumesUsageDescription='Agentic guarda tus proyectos y modelos en el volumen que elijas. El agente conserva sus permisos por proyecto.', NSLocalNetworkUsageDescription='Conectar tu iPhone o iPad al servidor del Mac en tu red local.', LSMinimumSystemVersion='12.0', StudioWorkspace=os.environ.get('STUDIO_QA_WORKSPACE','@application-support'), StudioShowSetup=os.environ.get('STUDIO_SHOW_SETUP')=='1', NSAppTransportSecurity={'NSAllowsLocalNetworking': True})
 info['CFBundleIconFile']='Studio.icns'
 with (Path(os.environ['STUDIO_APP'])/'Contents/Info.plist').open('wb') as f: plistlib.dump(info,f)
 PY
@@ -32,7 +32,7 @@ from pathlib import Path
 source=Path(os.environ['STUDIO_APP']); target=Path(os.environ['STUDIO_TARGET'])
 target.parent.mkdir(parents=True,exist_ok=True)
 staging=target.with_name('.'+target.name+'.staging-'+uuid.uuid4().hex[:8])
-shutil.copytree(source,staging,copy_function=shutil.copyfile)
+shutil.copytree(source,staging,copy_function=shutil.copy2)
 (staging/'Contents/MacOS/Agentic Studio').chmod(0o755)
 # A fresh vnode avoids stale macOS code-signature caches from truncating a previously executed binary.
 for p in staging.rglob('._*'):

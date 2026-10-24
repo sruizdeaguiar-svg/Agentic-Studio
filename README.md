@@ -44,7 +44,7 @@ La ejecución del agente utiliza Seatbelt de macOS y se bloquea si no puede esta
 
 La RAM disponible se muestra como una estimación separada de memoria libre, caché recuperable, compresión y swap. En MoE se presupuestan los pesos completos, no solo los expertos activos.
 
-Consulta [SECURITY.md](SECURITY.md) y [los hallazgos corregidos en 0.5.0](docs/releases/0.5.0-security.md). Las conversaciones no están cifradas por la aplicación.
+Consulta [SECURITY.md](SECURITY.md) y [los hallazgos corregidos en 0.5.1](docs/releases/0.5.1-security.md). Las conversaciones no están cifradas por la aplicación.
 
 ## Compilar
 
@@ -76,9 +76,12 @@ El test de interoperabilidad stdio se omite si no está instalado el servidor of
 
 ## Documentación y versiones
 
+- [Compilación y portabilidad](docs/portability.md)
 - [Estructura de carpetas y código](docs/architecture.md)
 - [Guía de uso](docs/guide.md)
 - [Guía de iPhone/iPad](ios/README-es.md)
 - [Historial de versiones anteriores](https://github.com/sruizdeaguiar-svg/Agentic-Studio/tree/historial-versiones)
 
 `main` contiene la versión actual. Las versiones anteriores y sus notas se guardan por separado en `historial-versiones`.
+
+macOS 0.5.1 corrige la portabilidad del instalador. El cliente iOS continúa en 0.5.0; no cambia su protocolo. La prueba aislada no equivale a un Mac limpio o una VM, y Gatekeeper no se ha eludido.

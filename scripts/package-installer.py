@@ -20,14 +20,14 @@ clean={k:{x:y for x,y in v.items() if x!='archive'} for k,v in manifest.items()}
 subprocess.run(['/usr/bin/codesign','--force','--deep','--sign','-',str(app)],check=True)
 subprocess.run(['/usr/bin/codesign','--verify','--deep','--strict',str(app)],check=True)
 installer=stage/'Instalar Agentic Studio.app';(installer/'Contents/MacOS').mkdir(parents=True);(installer/'Contents/Resources/Payload').mkdir(parents=True)
-shutil.copytree(app,installer/'Contents/Resources/Payload/Agentic Studio.app',copy_function=shutil.copyfile,symlinks=True)
-subprocess.run(['/usr/bin/xcrun','swiftc','-swift-version','5','-O','-framework','AppKit',str(root/'native/Installer.swift'),'-o',str(installer/'Contents/MacOS/Instalar Agentic Studio')],check=True)
-info={'CFBundleName':'Instalar Agentic Studio','CFBundleDisplayName':'Instalar Agentic Studio','CFBundleIdentifier':'local.agenticstudio.installer','CFBundleExecutable':'Instalar Agentic Studio','CFBundlePackageType':'APPL','CFBundleShortVersionString':'0.5.0','CFBundleVersion':'1','LSMinimumSystemVersion':'12.0','NSHighResolutionCapable':True,'NSRemovableVolumesUsageDescription':'Instalar Agentic Studio en la carpeta que selecciones.'}
+shutil.copytree(app,installer/'Contents/Resources/Payload/Agentic Studio.app',copy_function=shutil.copy2,symlinks=True)
+subprocess.run(['/usr/bin/xcrun','swiftc','-target','arm64-apple-macos12.0','-swift-version','5','-O','-framework','AppKit',str(root/'native/Installer.swift'),'-o',str(installer/'Contents/MacOS/Instalar Agentic Studio')],check=True)
+info={'CFBundleName':'Instalar Agentic Studio','CFBundleDisplayName':'Instalar Agentic Studio','CFBundleIdentifier':'local.agenticstudio.installer','CFBundleExecutable':'Instalar Agentic Studio','CFBundlePackageType':'APPL','CFBundleShortVersionString':'0.5.1','CFBundleVersion':'1','LSMinimumSystemVersion':'12.0','NSHighResolutionCapable':True,'NSRemovableVolumesUsageDescription':'Instalar Agentic Studio en la carpeta que selecciones.'}
 (installer/'Contents/Info.plist').write_bytes(plistlib.dumps(info));shutil.copyfile(resources/'Studio.icns',installer/'Contents/Resources/Studio.icns');info['CFBundleIconFile']='Studio.icns';(installer/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
 subprocess.run(['/usr/bin/codesign','--force','--deep','--sign','-',str(installer)],check=True);subprocess.run(['/usr/bin/codesign','--verify','--deep','--strict',str(installer)],check=True)
 out=root/'dist';out.mkdir(exist_ok=True);destination=out/'Instalar Agentic Studio.app'
 if destination.exists():destination.rename(out/('Instalar Agentic Studio.previous-'+os.urandom(4).hex()+'.app'))
-shutil.copytree(installer,destination,copy_function=shutil.copyfile,symlinks=True)
-zipfile=out/'Agentic-Studio-0.5.0-macOS-AppleSilicon.zip'
+shutil.copytree(installer,destination,copy_function=shutil.copy2,symlinks=True)
+zipfile=out/'Agentic-Studio-0.5.1-macOS-AppleSilicon.zip'
 subprocess.run(['/usr/bin/ditto','-c','-k','--sequesterRsrc','--keepParent',str(installer),str(zipfile)],check=True)
-report={'version':'0.5.0','architecture':'arm64','installer':str(destination),'archive':str(zipfile),'sha256':hashlib.sha256(zipfile.read_bytes()).hexdigest(),'portable_runtime':clean,'contains_data':False,'contains_credentials':False,'notarized':False,'codesign':'ad-hoc','native_install_test_pending':True};(root/'analysis/installer-validation.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))
+report={'version':'0.5.1','architecture':'arm64','installer':str(destination),'archive':str(zipfile),'sha256':hashlib.sha256(zipfile.read_bytes()).hexdigest(),'portable_runtime':clean,'contains_data':False,'contains_credentials':False,'notarized':False,'codesign':'ad-hoc','native_install_test_pending':True};(root/'analysis/installer-validation.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))

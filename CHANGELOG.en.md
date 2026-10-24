@@ -2,15 +2,13 @@
 
 [Español](CHANGELOG.md) · English
 
-## 0.5.0 — Agentic Studio
+## 0.5.1 — macOS installer portability
 
-- New name and icon on macOS, iPhone and iPad, with migration of existing data and credential identity.
-- Editable projects with individual working folders and permissions; recoverable project removal.
-- Shared desktop/mobile layout and an authorized project selector.
-- Sequential engine switching, unloading the previous model, global resource stop and explicit complete LM Studio shutdown.
-- Estimated available memory with a breakdown and conservative MoE budgeting.
-- Fixed DeepSeek CPU/mmap loading without repacking and added a validated JSON tool protocol.
-- Installer with selectable destination, model discovery and OAuth setup.
-- Security fixes AS-2026-01 through AS-2026-05: file paths and links, TLS negotiation, connection limits, local bootstrap, database permissions and mobile input validation. See [the security notes](docs/en/releases/0.5.0-security.md).
+- Preserves execute permissions for the app, Python and Codex while packaging.
+- Explicitly targets macOS 12 for native app/installer instead of inheriting macOS 27 from the build machine.
+- Uses the user's Application Support directory independently of the checkout.
+- Prefers bundled Codex and handles absent/nonstandard optional engines.
+- Adds a reproducible native test with an empty user environment and blocked access to real data, host engines, ChatGPT, Xcode and system Python.
+- 73 regression tests passed. See [portability](docs/en/portability.md) for reproduction and limits. Earlier security fixes remain in place.
 
-README and SECURITY describe verified functionality, limitations and signing requirements. The version number does not imply Apple notarization or App Store distribution. Previous versions are documented separately in the `historial-versiones` branch.
+The iOS client remains at 0.5.0. Earlier versions are kept in `historial-versiones` and their tags. The package is not notarized; execution on a freshly installed OS or macOS 12 is not claimed.

@@ -9,10 +9,26 @@ import subprocess
 import tempfile
 
 ROOT=Path(__file__).resolve().parent
-VLLM_PYTHON=Path('/opt/homebrew/opt/vllm-metal/libexec/bin/python3.12')
-OMLX_ROOT=Path('/Applications/oMLX.app/Contents/Resources')
+def executable(path):
+    try:return Path(path).is_file() and os.access(path,os.X_OK)
+    except OSError:return False
+
+def find_executable(candidates):
+    return next((Path(p) for p in candidates if p and executable(p)),None)
+
+def resolve_runtime_paths():
+    vllm=find_executable([os.environ.get('AGENTIC_VLLM_PYTHON',''),
+        '/opt/homebrew/opt/vllm-metal/libexec/bin/python3',
+        '/usr/local/opt/vllm-metal/libexec/bin/python3',
+        '/opt/homebrew/opt/vllm-metal/libexec/bin/python3.12'])
+    configured=os.environ.get('AGENTIC_OMLX_ROOT','')
+    roots=[Path(configured)] if configured else [Path('/Applications/oMLX.app/Contents/Resources'),Path.home()/'Applications/oMLX.app/Contents/Resources']
+    root=next((p for p in roots if executable(p.parent/'MacOS/omlx-cli')),roots[0])
+    return vllm or Path('/nonexistent/agentic/vllm-python'),root
+
+VLLM_PYTHON,OMLX_ROOT=resolve_runtime_paths()
 OMLX_PYTHON=OMLX_ROOT/'Python/cpython-3.11/bin/python3'
-OMLX_CLI=Path('/Applications/oMLX.app/Contents/MacOS/omlx-cli')
+OMLX_CLI=OMLX_ROOT.parent/'MacOS/omlx-cli'
 PROBE_CACHE={}
 
 def runtime_environment(engine):
@@ -26,11 +42,11 @@ def llama_binary():
     configured=os.environ.get('AGENTIC_LLAMA_SERVER','')
     candidates=[configured,shutil.which('llama-server') or '', '/opt/homebrew/bin/llama-server','/usr/local/bin/llama-server']
     for p in candidates:
-        if p and Path(p).is_file() and os.access(p,os.X_OK):return p
+        if p and executable(p):return p
     return ''
 
 def runtime_inventory():
-    return {'llama':{'installed':bool(llama_binary()),'binary':llama_binary(),'format':'GGUF'}, 'vllm':{'installed':VLLM_PYTHON.is_file(),'python':str(VLLM_PYTHON),'format':'Safetensors / MLX · registro vLLM Metal'}, 'omlx':{'installed':OMLX_CLI.is_file() and OMLX_PYTHON.is_file(),'binary':str(OMLX_CLI),'format':'Safetensors / MLX · registro MLX-LM'}}
+    return {'llama':{'installed':bool(llama_binary()),'binary':llama_binary(),'format':'GGUF'}, 'vllm':{'installed':executable(VLLM_PYTHON),'python':str(VLLM_PYTHON),'format':'Safetensors / MLX · registro vLLM Metal'}, 'omlx':{'installed':executable(OMLX_CLI) and executable(OMLX_PYTHON),'binary':str(OMLX_CLI),'format':'Safetensors / MLX · registro MLX-LM'}}
 
 def qualify(models,engine):
     paths=[m['path'] for m in models if m['format']!='GGUF']

@@ -7,7 +7,7 @@ from pathlib import Path
 
 _installed=Path('/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex')
 _bundled=Path(__file__).resolve().parent.parent/'codex/codex'
-BINARY=Path(os.environ.get('AGENTIC_STUDIO_CODEX_BINARY',str(_installed if _installed.is_file() else _bundled)))
+BINARY=Path(os.environ.get('AGENTIC_STUDIO_CODEX_BINARY',str(_bundled if _bundled.is_file() else _installed)))
 FEATURES=('shell_tool','unified_exec','code_mode','code_mode_host','js_repl','multi_agent','apps','browser_use','browser_use_external','web_search_request','collab','memory_tool','artifact','image_generation','plugins','skills')
 
 def sandbox(home,binary=BINARY):
@@ -30,7 +30,7 @@ def sandbox(home,binary=BINARY):
 class Client:
     def __init__(self,home):
         self.home=Path(home).resolve();self.home.mkdir(parents=True,exist_ok=True,mode=0o700);(self.home/'empty').mkdir(exist_ok=True)
-        if not BINARY.is_file():raise ValueError('Instala la app oficial ChatGPT/Codex para usar OpenAI mediante OAuth.')
+        if not BINARY.is_file():raise ValueError('Usa el instalador portátil de Agentic Studio o configura un cliente oficial Codex para conectar OpenAI mediante OAuth.')
         if not Path('/usr/bin/sandbox-exec').is_file():raise ValueError('Falta el aislamiento obligatorio del adaptador OpenAI.')
         self.closed=False;self.last=time.monotonic();self.login_pending=False;self.login_error='';self.queue=queue.Queue(maxsize=32);self.serial=0;self.lock=threading.RLock();self.current_thread='';self.current_turn=''
         args=['/usr/bin/sandbox-exec','-p',sandbox(self.home),str(BINARY),'app-server','--stdio','-c','cli_auth_credentials_store="keyring"','-c','analytics.enabled=false','-c','web_search="disabled"','-c','mcp_servers={}']

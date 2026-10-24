@@ -43,7 +43,7 @@ Agent commands use macOS Seatbelt and fail closed if isolation cannot be establi
 
 Available RAM is an estimate displayed separately from free memory, reclaimable cache, compression and swap. MoE admission budgets full model weights, not only active experts.
 
-See [security guidance](SECURITY.en.md) and [security fixes in 0.5.0](docs/en/releases/0.5.0-security.md). The application does not encrypt conversations at rest.
+See [security guidance](SECURITY.en.md) and [security fixes in 0.5.1](docs/en/releases/0.5.1-security.md). The application does not encrypt conversations at rest.
 
 ## Build and test
 
@@ -70,6 +70,7 @@ Screenshots show fictitious UI validation data. Local tests and packages do not 
 
 ## Documentation and versions
 
+- [Build and portability verification](docs/en/portability.md)
 - [Source code and folder structure](docs/en/architecture.md)
 - [User guide](docs/en/guide.md)
 - [iPhone/iPad guide](ios/README-en.md)
@@ -78,3 +79,5 @@ Screenshots show fictitious UI validation data. Local tests and packages do not 
 - [Previous-version archive](https://github.com/sruizdeaguiar-svg/Agentic-Studio/tree/historial-versiones)
 
 `main` contains the current release. Previous snapshots and notes are kept separately in `historial-versiones`.
+
+macOS 0.5.1 fixes installer portability. The iOS client remains at 0.5.0 with the same protocol. Isolated testing is not a clean Mac/VM, and Gatekeeper has not been bypassed.
