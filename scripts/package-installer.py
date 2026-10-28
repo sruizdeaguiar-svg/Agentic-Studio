@@ -3,8 +3,17 @@ import hashlib,json,os,plistlib,shutil,subprocess,tarfile,zipfile as zip_module
 from pathlib import Path
 from portable_checks import verify_payload
 root=Path.cwd();stage=Path(os.environ['AGENTIC_INSTALL_BUILD']);deps=Path(os.environ['AGENTIC_DEPENDENCIES']);manifest=json.loads((deps/'manifest.json').read_text());app=stage/'Agentic Studio.app';resources=app/'Contents/Resources'
+# The manifest is a cache, not an independent trust anchor. Keep these pins in
+# sync with fetch-runtimes.py when intentionally updating dependencies.
+trusted_sha256={
+ 'python':'7b8d00b751db21cea87dc551a8f8165147c5fbc5251d5537d7e5497dde00a219',
+ 'codex':'aa8299c169d80111aac05543ad2621c9bdbedb9bc252c905fe3f5a5baf9a4142',
+}
 for name in ('python','codex'):
- archive=Path(manifest[name]['archive']);digest=hashlib.sha256(archive.read_bytes()).hexdigest();assert digest==manifest[name]['sha256']
+ archive=Path(manifest[name]['archive'])
+ digest=hashlib.sha256(archive.read_bytes()).hexdigest()
+ if manifest[name]['sha256'] != trusted_sha256[name] or digest != trusted_sha256[name]:
+  raise ValueError('Untrusted or corrupt runtime archive: '+name)
  target=resources if name=='python' else resources/'codex';target.mkdir(exist_ok=True)
  with tarfile.open(archive) as tar:
   # Official, checksum-pinned archives only. Also reject absolute and escaping paths.
